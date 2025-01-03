@@ -38,11 +38,39 @@
       margin: 5px;
       padding: 8px 12px;
       border: 1px solid #ccc;
-      background-color: #eee;
+      color: white;
       cursor: pointer;
     }
+    .state-item:nth-child(1) { background-color: #FF5733; }
+    .state-item:nth-child(2) { background-color: #33FF57; }
+    .state-item:nth-child(3) { background-color: #5733FF; }
+    .state-item:nth-child(4) { background-color: #FFC300; }
+    .state-item:nth-child(5) { background-color: #DAF7A6; }
+    .state-item:nth-child(6) { background-color: #C70039; }
+    .state-item:nth-child(7) { background-color: #900C3F; }
+    .state-item:nth-child(8) { background-color: #581845; }
+    .state-item:nth-child(9) { background-color: #FF5733; }
+    .state-item:nth-child(10) { background-color: #33FF57; }
+    .state-item:nth-child(11) { background-color: #5733FF; }
+    .state-item:nth-child(12) { background-color: #FFC300; }
+    .state-item:nth-child(13) { background-color: #DAF7A6; }
+    .state-item:nth-child(14) { background-color: #C70039; }
+    .state-item:nth-child(15) { background-color: #900C3F; }
+    .state-item:nth-child(16) { background-color: #581845; }
+    .state-item:nth-child(17) { background-color: #FF5733; }
+    .state-item:nth-child(18) { background-color: #33FF57; }
+    .state-item:nth-child(19) { background-color: #5733FF; }
+    .state-item:nth-child(20) { background-color: #FFC300; }
+    .state-item:nth-child(21) { background-color: #DAF7A6; }
+    .state-item:nth-child(22) { background-color: #C70039; }
+    .state-item:nth-child(23) { background-color: #900C3F; }
+    .state-item:nth-child(24) { background-color: #581845; }
+    .state-item:nth-child(25) { background-color: #FF5733; }
+    .state-item:nth-child(26) { background-color: #33FF57; }
+    .state-item:nth-child(27) { background-color: #5733FF; }
+    .state-item:nth-child(28) { background-color: #FFC300; }
     .state-item.selected {
-      background-color: #ddd;
+      outline: 2px solid black;
     }
     #submit-button, #reset-button {
       margin-top: 20px;
@@ -50,7 +78,7 @@
       font-size: 16px;
       cursor: pointer;
     }
-    #score, #timer {
+    #score {
       margin-top: 20px;
       font-size: 18px;
     }
@@ -100,77 +128,5 @@
   <button id="reset-button">Reset</button>
 
   <div id="score"></div>
-
-  <script>
-    let score = 0;
-    let selectedState = null;
-    const stateMap = {}; // Stores the selected state and the position on the map
-
-    // Function to update score
-    function updateScore() {
-      document.getElementById('score').textContent = `Score: ${score}`;
-    }
-
-    // Click on a state name
-    document.querySelectorAll('.state-item').forEach(item => {
-      item.addEventListener('click', () => {
-        // If a state is already selected, unselect it
-        if (selectedState === item.dataset.state) {
-          item.classList.remove('selected');
-          selectedState = null;
-        } else {
-          // Select the state
-          document.querySelectorAll('.state-item').forEach(state => state.classList.remove('selected'));
-          item.classList.add('selected');
-          selectedState = item.dataset.state;
-        }
-      });
-    });
-
-    // Listen for clicks on the map
-    document.getElementById('india-map').addEventListener('load', function () {
-      const svgDoc = document.getElementById('india-map').contentDocument;
-      const stateZones = svgDoc.querySelectorAll('[id]'); // Select all states by ID
-
-      // Add click event to each state on the map
-      stateZones.forEach(zone => {
-        zone.addEventListener('click', () => {
-          if (selectedState && zone.id === selectedState) {
-            zone.innerHTML = selectedState; // Place the state name inside the map area
-            stateMap[selectedState] = zone; // Store the state with its mapped position
-            selectedState = null; // Reset selection
-            document.querySelector(`.state-item[data-state="${zone.id}"]`).classList.remove('selected');
-            updateScore(); // Update score after successful placement
-          }
-        });
-      });
-    });
-
-    // Submit button functionality
-    document.getElementById('submit-button').addEventListener('click', () => {
-      let correctCount = 0;
-      Object.keys(stateMap).forEach(state => {
-        const zone = stateMap[state];
-        if (zone && zone.innerHTML === state) {
-          correctCount++;
-        }
-      });
-      alert(`You have correctly placed ${correctCount} out of 28 states.`);
-    });
-
-    // Reset button functionality
-    document.getElementById('reset-button').addEventListener('click', () => {
-      stateMap = {}; // Clear state map
-      score = 0; // Reset score
-      updateScore(); // Update score
-      document.querySelectorAll('.state-item').forEach(item => {
-        item.classList.remove('selected'); // Remove selected state
-      });
-      const svgDoc = document.getElementById('india-map').contentDocument;
-      svgDoc.querySelectorAll('[id]').forEach(zone => {
-        zone.innerHTML = ''; // Remove the placed state name from the map
-      });
-    });
-  </script>
 </body>
 </html>
