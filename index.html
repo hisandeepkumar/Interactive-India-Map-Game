@@ -30,10 +30,10 @@
     .incorrect {
       fill: red !important;
     }
-    #state-list, #quiz-container, #region-matching, #state-inputs {
+    #state-list {
       margin-top: 20px;
     }
-    .state-item, .choice {
+    .state-item {
       display: inline-block;
       margin: 5px;
       padding: 8px 12px;
@@ -41,7 +41,7 @@
       background-color: #eee;
       cursor: pointer;
     }
-    .choice:hover {
+    .state-item.selected {
       background-color: #ddd;
     }
     #submit-button, #reset-button {
@@ -54,180 +54,122 @@
       margin-top: 20px;
       font-size: 18px;
     }
-    .tooltip {
-      position: absolute;
-      background-color: rgba(0, 0, 0, 0.7);
-      color: white;
-      padding: 5px;
-      border-radius: 3px;
-      display: none;
-      pointer-events: none;
-    }
   </style>
 </head>
 <body>
-  <h1>India Map Interactive Quiz</h1>
-  <p>Choose or type the names of states to match them on the map.</p>
+  <h1>Interactive India Map</h1>
+  <p>Select a state name and place it on the map.</p>
 
   <div id="map-container">
     <object id="india-map" type="image/svg+xml" data="india.svg"></object>
   </div>
 
-  <!-- Multiple Choice Quiz -->
-  <div id="quiz-container">
-    <p>Where is Rajasthan located?</p>
-    <div class="choice" data-state="Rajasthan">Rajasthan</div>
-    <div class="choice" data-state="Maharashtra">Maharashtra</div>
-    <div class="choice" data-state="Gujarat">Gujarat</div>
-  </div>
-
-  <!-- Click-to-Select States -->
+  <!-- State List for Selection -->
   <div id="state-list">
-    <div class="state-item" data-state="Rajasthan">Rajasthan</div>
-    <div class="state-item" data-state="Maharashtra">Maharashtra</div>
+    <div class="state-item" data-state="Andhra Pradesh">Andhra Pradesh</div>
+    <div class="state-item" data-state="Arunachal Pradesh">Arunachal Pradesh</div>
+    <div class="state-item" data-state="Assam">Assam</div>
+    <div class="state-item" data-state="Bihar">Bihar</div>
+    <div class="state-item" data-state="Chhattisgarh">Chhattisgarh</div>
+    <div class="state-item" data-state="Goa">Goa</div>
     <div class="state-item" data-state="Gujarat">Gujarat</div>
-  </div>
-
-  <!-- Text Input for State Names -->
-  <div id="state-inputs">
-    <input type="text" id="rajasthan" placeholder="Enter state for Rajasthan" />
-    <input type="text" id="maharashtra" placeholder="Enter state for Maharashtra" />
-    <input type="text" id="gujarat" placeholder="Enter state for Gujarat" />
-  </div>
-
-  <!-- Dropdown for Region Matching -->
-  <div id="region-matching">
-    <select id="rajasthan-select">
-      <option value="">Select Rajasthan</option>
-      <option value="rajasthan">Rajasthan</option>
-      <option value="maharashtra">Maharashtra</option>
-      <option value="gujarat">Gujarat</option>
-    </select>
+    <div class="state-item" data-state="Haryana">Haryana</div>
+    <div class="state-item" data-state="Himachal Pradesh">Himachal Pradesh</div>
+    <div class="state-item" data-state="Jharkhand">Jharkhand</div>
+    <div class="state-item" data-state="Karnataka">Karnataka</div>
+    <div class="state-item" data-state="Kerala">Kerala</div>
+    <div class="state-item" data-state="Madhya Pradesh">Madhya Pradesh</div>
+    <div class="state-item" data-state="Maharashtra">Maharashtra</div>
+    <div class="state-item" data-state="Manipur">Manipur</div>
+    <div class="state-item" data-state="Meghalaya">Meghalaya</div>
+    <div class="state-item" data-state="Mizoram">Mizoram</div>
+    <div class="state-item" data-state="Nagaland">Nagaland</div>
+    <div class="state-item" data-state="Odisha">Odisha</div>
+    <div class="state-item" data-state="Punjab">Punjab</div>
+    <div class="state-item" data-state="Rajasthan">Rajasthan</div>
+    <div class="state-item" data-state="Sikkim">Sikkim</div>
+    <div class="state-item" data-state="Tamil Nadu">Tamil Nadu</div>
+    <div class="state-item" data-state="Telangana">Telangana</div>
+    <div class="state-item" data-state="Tripura">Tripura</div>
+    <div class="state-item" data-state="Uttar Pradesh">Uttar Pradesh</div>
+    <div class="state-item" data-state="Uttarakhand">Uttarakhand</div>
+    <div class="state-item" data-state="West Bengal">West Bengal</div>
   </div>
 
   <button id="submit-button">Submit</button>
   <button id="reset-button">Reset</button>
 
   <div id="score"></div>
-  <div id="timer">Time left: <span id="time-left">60</span> seconds</div>
-
-  <div id="tooltip" class="tooltip"></div>
 
   <script>
-    let timer;
-    let timeLeft = 60;
     let score = 0;
     let selectedState = null;
+    const stateMap = {}; // Stores the selected state and the position on the map
 
-    // Timer countdown
-    timer = setInterval(() => {
-      timeLeft--;
-      document.getElementById('time-left').textContent = timeLeft;
-      if (timeLeft <= 0) {
-        clearInterval(timer);
-        alert('Time is up! Submit your answers.');
-      }
-    }, 1000);
+    // Function to update score
+    function updateScore() {
+      document.getElementById('score').textContent = `Score: ${score}`;
+    }
 
+    // Click on a state name
+    document.querySelectorAll('.state-item').forEach(item => {
+      item.addEventListener('click', () => {
+        // If a state is already selected, unselect it
+        if (selectedState === item.dataset.state) {
+          item.classList.remove('selected');
+          selectedState = null;
+        } else {
+          // Select the state
+          document.querySelectorAll('.state-item').forEach(state => state.classList.remove('selected'));
+          item.classList.add('selected');
+          selectedState = item.dataset.state;
+        }
+      });
+    });
+
+    // Listen for clicks on the map
     document.getElementById('india-map').addEventListener('load', function () {
       const svgDoc = document.getElementById('india-map').contentDocument;
-      const dropZones = svgDoc.querySelectorAll('[id]'); // Select all states by ID
-      const stateItems = document.querySelectorAll('.state-item');
-      const choices = document.querySelectorAll('.choice');
-      const inputs = document.querySelectorAll('#state-inputs input');
-      const dropdowns = document.querySelectorAll('#region-matching select');
+      const stateZones = svgDoc.querySelectorAll('[id]'); // Select all states by ID
 
-      let draggedItem = null;
-
-      // Click-to-Select States
-      stateItems.forEach(item => {
-        item.addEventListener('click', () => {
-          selectedState = item.dataset.state;
-          item.style.backgroundColor = '#ccc'; // Highlight selected state name
-        });
-      });
-
-      // Multiple Choice Quiz
-      choices.forEach(choice => {
-        choice.addEventListener('click', () => {
-          const state = choice.dataset.state;
-          const zone = document.getElementById(state);
-          if (zone) {
-            if (zone.id === state) {
-              zone.classList.add('correct');
-              alert('Correct!');
-              score++;
-              updateScore();
-            } else {
-              zone.classList.add('incorrect');
-              alert('Incorrect, try again!');
-            }
+      // Add click event to each state on the map
+      stateZones.forEach(zone => {
+        zone.addEventListener('click', () => {
+          if (selectedState && zone.id === selectedState) {
+            zone.innerHTML = selectedState; // Place the state name inside the map area
+            stateMap[selectedState] = zone; // Store the state with its mapped position
+            selectedState = null; // Reset selection
+            document.querySelector(`.state-item[data-state="${zone.id}"]`).classList.remove('selected');
+            updateScore(); // Update score after successful placement
           }
         });
       });
+    });
 
-      // Text Input for States
-      inputs.forEach(input => {
-        input.addEventListener('blur', () => {
-          const stateName = input.value.trim();
-          const stateZone = document.getElementById(input.id);
-          if (stateName.toLowerCase() === input.id.toLowerCase()) {
-            stateZone.classList.add('correct');
-            input.style.borderColor = 'green';
-            score++;
-          } else {
-            stateZone.classList.add('incorrect');
-            input.style.borderColor = 'red';
-          }
-          updateScore();
-        });
+    // Submit button functionality
+    document.getElementById('submit-button').addEventListener('click', () => {
+      let correctCount = 0;
+      Object.keys(stateMap).forEach(state => {
+        const zone = stateMap[state];
+        if (zone && zone.innerHTML === state) {
+          correctCount++;
+        }
       });
+      alert(`You have correctly placed ${correctCount} out of 28 states.`);
+    });
 
-      // Dropdown for Region Matching
-      dropdowns.forEach(dropdown => {
-        dropdown.addEventListener('change', () => {
-          const selectedState = dropdown.value;
-          const selectedZone = document.getElementById(selectedState);
-          dropZones.forEach(zone => zone.classList.remove('correct', 'incorrect'));
-          if (selectedZone) {
-            selectedZone.classList.add('correct');
-            score++;
-          }
-          updateScore();
-        });
+    // Reset button functionality
+    document.getElementById('reset-button').addEventListener('click', () => {
+      stateMap = {}; // Clear state map
+      score = 0; // Reset score
+      updateScore(); // Update score
+      document.querySelectorAll('.state-item').forEach(item => {
+        item.classList.remove('selected'); // Remove selected state
       });
-
-      // Submit button validation
-      document.getElementById('submit-button').addEventListener('click', () => {
-        dropZones.forEach(zone => {
-          if (zone.classList.contains('correct')) {
-            console.log(`${zone.id} is correct`);
-          } else if (zone.classList.contains('incorrect')) {
-            console.log(`${zone.id} is incorrect`);
-          }
-        });
+      const svgDoc = document.getElementById('india-map').contentDocument;
+      svgDoc.querySelectorAll('[id]').forEach(zone => {
+        zone.innerHTML = ''; // Remove the placed state name from the map
       });
-
-      // Reset button functionality
-      document.getElementById('reset-button').addEventListener('click', () => {
-        dropZones.forEach(zone => {
-          zone.classList.remove('correct', 'incorrect');
-        });
-        stateItems.forEach(item => {
-          item.style.backgroundColor = '';
-        });
-        inputs.forEach(input => {
-          input.value = '';
-          input.style.borderColor = '#ccc';
-        });
-        score = 0;
-        updateScore();
-      });
-
-      // Update score
-      function updateScore() {
-        document.getElementById('score').textContent = `Score: ${score}`;
-      }
     });
   </script>
 </body>
