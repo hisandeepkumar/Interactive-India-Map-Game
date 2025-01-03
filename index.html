@@ -22,6 +22,7 @@
       stroke: #000;
       stroke-width: 0.5;
       cursor: pointer;
+      transition: fill 0.2s ease;
     }
     .correct {
       fill: green !important;
@@ -43,10 +44,24 @@
     .state-item:active {
       cursor: grabbing;
     }
-    #submit-button {
+    #submit-button, #reset-button {
       margin-top: 20px;
       padding: 10px 20px;
       font-size: 16px;
+      cursor: pointer;
+    }
+    #score {
+      margin-top: 20px;
+      font-size: 18px;
+    }
+    .tooltip {
+      position: absolute;
+      background-color: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 5px;
+      border-radius: 3px;
+      display: none;
+      pointer-events: none;
     }
   </style>
 </head>
@@ -55,13 +70,10 @@
   <p>Drag the state names to their correct positions on the map.</p>
 
   <div id="map-container">
-    <!-- Embed the downloaded SVG file -->
-    <!-- Replace 'india.svg' with the path to your downloaded SVG file -->
     <object id="india-map" type="image/svg+xml" data="india.svg"></object>
   </div>
 
   <div id="state-list">
-    <!-- Example state names -->
     <div class="state-item" draggable="true" data-state="Rajasthan">Rajasthan</div>
     <div class="state-item" draggable="true" data-state="Maharashtra">Maharashtra</div>
     <div class="state-item" draggable="true" data-state="Gujarat">Gujarat</div>
@@ -69,14 +81,19 @@
   </div>
 
   <button id="submit-button">Submit</button>
+  <button id="reset-button">Reset</button>
+
+  <div id="score"></div>
+  <div id="tooltip" class="tooltip"></div>
 
   <script>
-    // Wait until the SVG loads
     document.getElementById('india-map').addEventListener('load', function () {
       const svgDoc = document.getElementById('india-map').contentDocument;
       const dropZones = svgDoc.querySelectorAll('[id]'); // Select all states by ID
       const stateItems = document.querySelectorAll('.state-item');
+      const tooltip = document.getElementById('tooltip');
       let draggedItem = null;
+      let score = 0;
 
       // Enable dragging for state names
       stateItems.forEach(item => {
@@ -88,6 +105,15 @@
         item.addEventListener('dragend', () => {
           setTimeout(() => (draggedItem.style.display = 'block'), 0);
           draggedItem = null;
+        });
+
+        item.addEventListener('dragover', e => e.preventDefault());
+        item.addEventListener('dragenter', e => {
+          e.preventDefault();
+          item.style.border = '2px dashed #aaa';
+        });
+        item.addEventListener('dragleave', () => {
+          item.style.border = '1px solid #ccc';
         });
       });
 
@@ -102,10 +128,22 @@
             const stateName = draggedItem.dataset.state;
             if (zone.id === stateName) {
               zone.classList.add('correct'); // Correct placement
+              draggedItem.style.display = 'none';
+              score++;
             } else {
               zone.classList.add('incorrect'); // Incorrect placement
             }
+            updateScore();
           }
+        });
+
+        zone.addEventListener('mouseenter', () => {
+          tooltip.textContent = zone.id;
+          tooltip.style.display = 'block';
+        });
+
+        zone.addEventListener('mouseleave', () => {
+          tooltip.style.display = 'none';
         });
       });
 
@@ -119,6 +157,23 @@
           }
         });
       });
+
+      // Reset button functionality
+      document.getElementById('reset-button').addEventListener('click', () => {
+        dropZones.forEach(zone => {
+          zone.classList.remove('correct', 'incorrect');
+        });
+        stateItems.forEach(item => {
+          item.style.display = 'inline-block';
+        });
+        score = 0;
+        updateScore();
+      });
+
+      // Score display update
+      function updateScore() {
+        document.getElementById('score').textContent = `Score: ${score} / ${dropZones.length}`;
+      }
     });
   </script>
 </body>
