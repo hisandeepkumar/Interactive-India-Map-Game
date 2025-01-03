@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive India Map</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+    #map-container {
+      margin: 20px auto;
+      max-width: 800px;
+    }
+    svg {
+      width: 100%;
+      height: auto;
+    }
+    .state {
+      fill: #f2f2f2;
+      stroke: #000;
+      stroke-width: 0.5;
+      cursor: pointer;
+    }
+    .correct {
+      fill: green !important;
+    }
+    .incorrect {
+      fill: red !important;
+    }
+    #state-list {
+      margin-top: 20px;
+    }
+    .state-item {
+      display: inline-block;
+      margin: 5px;
+      padding: 8px 12px;
+      border: 1px solid #ccc;
+      background-color: #eee;
+      cursor: grab;
+    }
+    .state-item:active {
+      cursor: grabbing;
+    }
+    #submit-button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <h1>India Map Drag & Drop</h1>
+  <p>Drag the state names to their correct positions on the map.</p>
+
+  <div id="map-container">
+    <!-- Embed the downloaded SVG file -->
+    <!-- Replace 'india.svg' with the path to your downloaded SVG file -->
+    <object id="india-map" type="image/svg+xml" data="india.svg"></object>
+  </div>
+
+  <div id="state-list">
+    <!-- Example state names -->
+    <div class="state-item" draggable="true" data-state="Rajasthan">Rajasthan</div>
+    <div class="state-item" draggable="true" data-state="Maharashtra">Maharashtra</div>
+    <div class="state-item" draggable="true" data-state="Gujarat">Gujarat</div>
+    <!-- Add more states as needed -->
+  </div>
+
+  <button id="submit-button">Submit</button>
+
+  <script>
+    // Wait until the SVG loads
+    document.getElementById('india-map').addEventListener('load', function () {
+      const svgDoc = document.getElementById('india-map').contentDocument;
+      const dropZones = svgDoc.querySelectorAll('[id]'); // Select all states by ID
+      const stateItems = document.querySelectorAll('.state-item');
+      let draggedItem = null;
+
+      // Enable dragging for state names
+      stateItems.forEach(item => {
+        item.addEventListener('dragstart', () => {
+          draggedItem = item;
+          setTimeout(() => (item.style.display = 'none'), 0);
+        });
+
+        item.addEventListener('dragend', () => {
+          setTimeout(() => (draggedItem.style.display = 'block'), 0);
+          draggedItem = null;
+        });
+      });
+
+      // Enable drop on map areas (states)
+      dropZones.forEach(zone => {
+        zone.addEventListener('dragover', e => {
+          e.preventDefault();
+        });
+
+        zone.addEventListener('drop', () => {
+          if (draggedItem) {
+            const stateName = draggedItem.dataset.state;
+            if (zone.id === stateName) {
+              zone.classList.add('correct'); // Correct placement
+            } else {
+              zone.classList.add('incorrect'); // Incorrect placement
+            }
+          }
+        });
+      });
+
+      // Submit button validation
+      document.getElementById('submit-button').addEventListener('click', () => {
+        dropZones.forEach(zone => {
+          if (zone.classList.contains('correct')) {
+            console.log(`${zone.id} is correct`);
+          } else if (zone.classList.contains('incorrect')) {
+            console.log(`${zone.id} is incorrect`);
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>
