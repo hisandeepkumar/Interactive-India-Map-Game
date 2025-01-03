@@ -30,19 +30,19 @@
     .incorrect {
       fill: red !important;
     }
-    #state-list {
+    #state-list, #quiz-container, #region-matching, #state-inputs {
       margin-top: 20px;
     }
-    .state-item {
+    .state-item, .choice {
       display: inline-block;
       margin: 5px;
       padding: 8px 12px;
       border: 1px solid #ccc;
       background-color: #eee;
-      cursor: grab;
+      cursor: pointer;
     }
-    .state-item:active {
-      cursor: grabbing;
+    .choice:hover {
+      background-color: #ddd;
     }
     #submit-button, #reset-button {
       margin-top: 20px;
@@ -50,7 +50,7 @@
       font-size: 16px;
       cursor: pointer;
     }
-    #score {
+    #score, #timer {
       margin-top: 20px;
       font-size: 18px;
     }
@@ -66,84 +66,134 @@
   </style>
 </head>
 <body>
-  <h1>India Map Drag & Drop</h1>
-  <p>Drag the state names to their correct positions on the map.</p>
+  <h1>India Map Interactive Quiz</h1>
+  <p>Choose or type the names of states to match them on the map.</p>
 
   <div id="map-container">
     <object id="india-map" type="image/svg+xml" data="india.svg"></object>
   </div>
 
+  <!-- Multiple Choice Quiz -->
+  <div id="quiz-container">
+    <p>Where is Rajasthan located?</p>
+    <div class="choice" data-state="Rajasthan">Rajasthan</div>
+    <div class="choice" data-state="Maharashtra">Maharashtra</div>
+    <div class="choice" data-state="Gujarat">Gujarat</div>
+  </div>
+
+  <!-- Click-to-Select States -->
   <div id="state-list">
-    <div class="state-item" draggable="true" data-state="Rajasthan">Rajasthan</div>
-    <div class="state-item" draggable="true" data-state="Maharashtra">Maharashtra</div>
-    <div class="state-item" draggable="true" data-state="Gujarat">Gujarat</div>
-    <!-- Add more states as needed -->
+    <div class="state-item" data-state="Rajasthan">Rajasthan</div>
+    <div class="state-item" data-state="Maharashtra">Maharashtra</div>
+    <div class="state-item" data-state="Gujarat">Gujarat</div>
+  </div>
+
+  <!-- Text Input for State Names -->
+  <div id="state-inputs">
+    <input type="text" id="rajasthan" placeholder="Enter state for Rajasthan" />
+    <input type="text" id="maharashtra" placeholder="Enter state for Maharashtra" />
+    <input type="text" id="gujarat" placeholder="Enter state for Gujarat" />
+  </div>
+
+  <!-- Dropdown for Region Matching -->
+  <div id="region-matching">
+    <select id="rajasthan-select">
+      <option value="">Select Rajasthan</option>
+      <option value="rajasthan">Rajasthan</option>
+      <option value="maharashtra">Maharashtra</option>
+      <option value="gujarat">Gujarat</option>
+    </select>
   </div>
 
   <button id="submit-button">Submit</button>
   <button id="reset-button">Reset</button>
 
   <div id="score"></div>
+  <div id="timer">Time left: <span id="time-left">60</span> seconds</div>
+
   <div id="tooltip" class="tooltip"></div>
 
   <script>
+    let timer;
+    let timeLeft = 60;
+    let score = 0;
+    let selectedState = null;
+
+    // Timer countdown
+    timer = setInterval(() => {
+      timeLeft--;
+      document.getElementById('time-left').textContent = timeLeft;
+      if (timeLeft <= 0) {
+        clearInterval(timer);
+        alert('Time is up! Submit your answers.');
+      }
+    }, 1000);
+
     document.getElementById('india-map').addEventListener('load', function () {
       const svgDoc = document.getElementById('india-map').contentDocument;
       const dropZones = svgDoc.querySelectorAll('[id]'); // Select all states by ID
       const stateItems = document.querySelectorAll('.state-item');
-      const tooltip = document.getElementById('tooltip');
+      const choices = document.querySelectorAll('.choice');
+      const inputs = document.querySelectorAll('#state-inputs input');
+      const dropdowns = document.querySelectorAll('#region-matching select');
+
       let draggedItem = null;
-      let score = 0;
 
-      // Enable dragging for state names
+      // Click-to-Select States
       stateItems.forEach(item => {
-        item.addEventListener('dragstart', () => {
-          draggedItem = item;
-          setTimeout(() => (item.style.display = 'none'), 0);
-        });
-
-        item.addEventListener('dragend', () => {
-          setTimeout(() => (draggedItem.style.display = 'block'), 0);
-          draggedItem = null;
-        });
-
-        item.addEventListener('dragover', e => e.preventDefault());
-        item.addEventListener('dragenter', e => {
-          e.preventDefault();
-          item.style.border = '2px dashed #aaa';
-        });
-        item.addEventListener('dragleave', () => {
-          item.style.border = '1px solid #ccc';
+        item.addEventListener('click', () => {
+          selectedState = item.dataset.state;
+          item.style.backgroundColor = '#ccc'; // Highlight selected state name
         });
       });
 
-      // Enable drop on map areas (states)
-      dropZones.forEach(zone => {
-        zone.addEventListener('dragover', e => {
-          e.preventDefault();
-        });
-
-        zone.addEventListener('drop', () => {
-          if (draggedItem) {
-            const stateName = draggedItem.dataset.state;
-            if (zone.id === stateName) {
-              zone.classList.add('correct'); // Correct placement
-              draggedItem.style.display = 'none';
+      // Multiple Choice Quiz
+      choices.forEach(choice => {
+        choice.addEventListener('click', () => {
+          const state = choice.dataset.state;
+          const zone = document.getElementById(state);
+          if (zone) {
+            if (zone.id === state) {
+              zone.classList.add('correct');
+              alert('Correct!');
               score++;
+              updateScore();
             } else {
-              zone.classList.add('incorrect'); // Incorrect placement
+              zone.classList.add('incorrect');
+              alert('Incorrect, try again!');
             }
-            updateScore();
           }
         });
+      });
 
-        zone.addEventListener('mouseenter', () => {
-          tooltip.textContent = zone.id;
-          tooltip.style.display = 'block';
+      // Text Input for States
+      inputs.forEach(input => {
+        input.addEventListener('blur', () => {
+          const stateName = input.value.trim();
+          const stateZone = document.getElementById(input.id);
+          if (stateName.toLowerCase() === input.id.toLowerCase()) {
+            stateZone.classList.add('correct');
+            input.style.borderColor = 'green';
+            score++;
+          } else {
+            stateZone.classList.add('incorrect');
+            input.style.borderColor = 'red';
+          }
+          updateScore();
         });
+      });
 
-        zone.addEventListener('mouseleave', () => {
-          tooltip.style.display = 'none';
+      // Dropdown for Region Matching
+      dropdowns.forEach(dropdown => {
+        dropdown.addEventListener('change', () => {
+          const selectedState = dropdown.value;
+          const selectedZone = document.getElementById(selectedState);
+          dropZones.forEach(zone => zone.classList.remove('correct', 'incorrect'));
+          if (selectedZone) {
+            selectedZone.classList.add('correct');
+            score++;
+          }
+          updateScore();
         });
       });
 
@@ -164,15 +214,19 @@
           zone.classList.remove('correct', 'incorrect');
         });
         stateItems.forEach(item => {
-          item.style.display = 'inline-block';
+          item.style.backgroundColor = '';
+        });
+        inputs.forEach(input => {
+          input.value = '';
+          input.style.borderColor = '#ccc';
         });
         score = 0;
         updateScore();
       });
 
-      // Score display update
+      // Update score
       function updateScore() {
-        document.getElementById('score').textContent = `Score: ${score} / ${dropZones.length}`;
+        document.getElementById('score').textContent = `Score: ${score}`;
       }
     });
   </script>
