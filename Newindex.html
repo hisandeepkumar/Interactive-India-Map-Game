@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>इंडिया मैप गेम</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>इंडिया मैप गेम</h1>
+    <div class="container">
+        <!-- SVG मैप -->
+        <svg id="indiaMap" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800">
+            <!-- राजस्थान -->
+            <path id="Rajasthan" d="M100,200L150,250..." fill="#ccc" stroke="#000" stroke-width="1" />
+            <!-- उत्तर प्रदेश -->
+            <path id="UttarPradesh" d="M200,300L250,350..." fill="#ccc" stroke="#000" stroke-width="1" />
+            <!-- और राज्यों को यहाँ जोड़ें -->
+        </svg>
+
+        <!-- राज्यों के नाम -->
+        <div class="state-list">
+            <h2>राज्यों के नाम</h2>
+            <ul id="stateNames">
+                <li><button data-state="Rajasthan">राजस्थान</button></li>
+                <li><button data-state="UttarPradesh">उत्तर प्रदेश</button></li>
+                <!-- और राज्यों को यहाँ जोड़ें -->
+            </ul>
+        </div>
+
+        <!-- सबमिट बटन -->
+        <button id="submitBtn" disabled>सबमिट करें</button>
+        <div id="result"></div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
