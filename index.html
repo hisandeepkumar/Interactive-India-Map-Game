@@ -572,7 +572,7 @@
 
   // Collect state/UT paths from SVG
   const svgEl = document.querySelector('#map svg');
-  const paths = Array.from(sgEl.querySelectorAll('path[id^="IN-"]'));
+  const paths = Array.from(svgEl.querySelectorAll('path[id^="IN-"]'));
   // Use title attribute for names (fallback to id)
   const regions = paths.map(p => ({ id: p.id, name: (p.getAttribute('title')||p.id).trim(), el: p }));
 
