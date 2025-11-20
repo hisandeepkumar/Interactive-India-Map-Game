@@ -468,22 +468,16 @@
     const selectedName = chip.dataset.name;
     const isCorrect = norm(selectedName) === norm(currentGlowingState.name);
     
-    // Store the selection
+    // Store the selection without immediate feedback
     userSelections.set(currentGlowingState.id, {
       name: selectedName,
-      correct: isCorrect
+      correct: isCorrect,
+      chip: chip
     });
     
-    // Update score
+    // Update score (but don't show yet)
     if (isCorrect) {
       score++;
-      chip.classList.add('correct');
-      currentGlowingState.el.classList.add('correct');
-      gameStatus.textContent = `Sahi jawab! ${selectedName} ✅`;
-    } else {
-      chip.classList.add('wrong');
-      currentGlowingState.el.classList.add('wrong');
-      gameStatus.textContent = `Galat jawab! Sahi tha: ${currentGlowingState.name} ❌`;
     }
     
     // Remove the state from remaining states
@@ -491,9 +485,7 @@
     
     // Move to next state or end game
     if (remainingStates.length > 0) {
-      setTimeout(() => {
-        nextGlowingState();
-      }, 1500);
+      nextGlowingState();
     } else {
       endGame();
     }
@@ -550,10 +542,7 @@
     // Calculate final score
     const percentage = Math.round((score / totalStates) * 100);
     
-    scoreLine.innerHTML = `Game Over! Aapka score: <span style="color: #5dffa1">${score}/${totalStates}</span> (${percentage}%)`;
-    gameStatus.textContent = "Phir se khelne ke liye Start Game dabao";
-    
-    // Show final results
+    // Apply final styling to map and list
     paths.forEach(p => {
       const selection = userSelections.get(p.id);
       if (selection) {
@@ -564,6 +553,21 @@
         }
       }
     });
+    
+    // Apply final styling to state names list
+    stateListEl.querySelectorAll('.state-name').forEach(chip => {
+      const selection = Array.from(userSelections.values()).find(s => s.chip === chip);
+      if (selection) {
+        if (selection.correct) {
+          chip.classList.add('correct');
+        } else {
+          chip.classList.add('wrong');
+        }
+      }
+    });
+    
+    scoreLine.innerHTML = `Game Over! Aapka score: <span style="color: #5dffa1">${score}/${totalStates}</span> (${percentage}%)`;
+    gameStatus.textContent = "Phir se khelne ke liye Start Game dabao";
   }
 
   function resetGame() {
