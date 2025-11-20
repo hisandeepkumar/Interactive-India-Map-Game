@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>India Map Match — State Select</title>
+<style>
+  :root {
+    --bg: #0b0f1a;
+    --panel: #101629;
+    --text: #e6f0ff;
+    --muted: #9ab0ff;
+    --accent: #84a9ff;
+    --neon1: #00e5ff;
+    --neon2: #4dff91;
+  }
+
+  html, body {
+    height: 100%;
+    margin: 0;
+    background: radial-gradient(1200px 800px at 70% 0%, #0f1630, var(--bg));
+    color: var(--text);
+    font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji';
+  }
+
+  body {
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 1100px;
+    padding: 16px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  h1 {
+    font-size: 22px;
+    letter-spacing: 0.5px;
+    margin: 0;
+    text-shadow: 0 0 12px rgba(0, 229, 255, 0.4);
+  }
+
+  .subtitle {
+    font-size: 13px;
+    color: var(--muted);
+    margin: 0;
+  }
+
+  .pill-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.08);
+    font-size: 12px;
+  }
+
+  .pill span.icon {
+    font-size: 14px;
+  }
+
+  .search-box-wrap {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .search-input {
+    flex: 1;
+    min-width: 180px;
+    padding: 9px 11px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.16);
+    background: rgba(16,22,41,0.9);
+    color: var(--text);
+    font-size: 13px;
+    outline: none;
+    box-shadow: 0 0 0 rgba(0, 229, 255, 0);
+    transition: box-shadow .2s ease, border-color .2s ease, background .2s ease;
+  }
+
+  .search-input::placeholder {
+    color: var(--muted);
+    opacity: 0.8;
+  }
+
+  .search-input:focus {
+    border-color: rgba(132,169,255,.9);
+    box-shadow: 0 0 18px rgba(0, 229, 255, 0.25), 0 0 30px rgba(77, 255, 145, 0.15);
+    background: rgba(16,22,41,1);
+  }
+
+  .main-panel {
+    flex: 1;
+    border-radius: 20px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 0 40px rgba(0, 229, 255, 0.06), inset 0 0 60px rgba(77, 255, 145, 0.03);
+    backdrop-filter: blur(6px);
+    padding: 16px 16px 18px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .panel-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .panel-title {
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .panel-hint {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .state-grid {
+    margin-top: 4px;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .state-btn {
+    appearance: none;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: radial-gradient(circle at 0 0, rgba(0,229,255,0.12), transparent 55%),
+                linear-gradient(180deg, #1a2240, #101629);
+    color: var(--text);
+    font-size: 13px;
+    padding: 10px 10px;
+    text-align: left;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 0 0 rgba(0,0,0,0);
+    transition: transform .08s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease, opacity .18s ease;
+  }
+
+  .state-btn span.label {
+    position: relative;
+    z-index: 1;
+  }
+
+  .state-btn span.tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    font-size: 10px;
+    padding: 2px 6px;
+    margin-left: 4px;
+    background: rgba(0,0,0,0.25);
+    color: var(--accent);
+  }
+
+  .state-btn::before {
+    content: "";
+    position: absolute;
+    inset: -40%;
+    opacity: 0;
+    background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), rgba(0, 229, 255, 0.18), transparent 60%);
+    transition: opacity .2s ease;
+  }
+
+  .state-btn:hover {
+    transform: translateY(-1px);
+    border-color: rgba(132,169,255,.85);
+    box-shadow: 0 0 18px rgba(0, 229, 255, 0.25), 0 0 30px rgba(77, 255, 145, 0.15);
+  }
+
+  .state-btn:hover::before {
+    opacity: 1;
+  }
+
+  .state-btn.ut {
+    border-style: dashed;
+    border-color: rgba(148, 187, 255, 0.4);
+    background: radial-gradient(circle at 0 0, rgba(148,187,255,0.18), transparent 55%),
+                linear-gradient(180deg, #151b33, #0f1425);
+  }
+
+  .state-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 0 0 rgba(0,0,0,0);
+  }
+
+  .footer-note {
+    font-size: 12px;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  .chip-small {
+    font-size: 11px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.03);
+  }
+
+  @media (max-width: 992px) {
+    .state-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 768px) {
+    .container {
+      padding: 12px;
+    }
+    h1 {
+      font-size: 19px;
+    }
+    .state-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .state-btn {
+      font-size: 12px;
+      padding: 8px 8px;
+    }
+  }
+
+  @media (max-width: 540px) {
+    .header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .state-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 380px) {
+    .state-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+    }
+    .state-btn {
+      font-size: 11px;
+      padding: 7px 7px;
+      border-radius: 14px;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div>
+        <h1>🗺️ India Map Match — Index</h1>
+        <p class="subtitle">Ek click mein state choose karo → Us state ka map game open hoga</p>
+      </div>
+      <div class="pill-row">
+        <div class="pill"><span class="icon">✨</span><span>Neon theme</span></div>
+        <div class="pill"><span class="icon">🧒</span><span>Kids friendly</span></div>
+      </div>
+    </div>
+
+    <div class="main-panel">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title">Sabhi States + UTs</div>
+          <div class="panel-hint">State button par click karo → Aapke banaye huye <strong>state map game</strong> wale page pe redirect hoga</div>
+        </div>
+        <div class="search-box-wrap">
+          <input id="searchInput" class="search-input" type="text" placeholder="Search: Uttar, Pradesh, Gujarat, Delhi...">
+        </div>
+      </div>
+
+      <div class="state-grid" id="stateGrid">
+        <!-- STATES (28) -->
+        <!-- NOTE: href ko aap apne file / URL ke hisaab se change kar sakte ho -->
+        <button class="state-btn" data-name="andhra pradesh" data-url="andhra-pradesh.html">
+          <span class="label">Andhra Pradesh</span>
+        </button>
+        <button class="state-btn" data-name="arunachal pradesh" data-url="arunachal-pradesh.html">
+          <span class="label">Arunachal Pradesh</span>
+        </button>
+        <button class="state-btn" data-name="assam" data-url="assam.html">
+          <span class="label">Assam</span>
+        </button>
+        <button class="state-btn" data-name="bihar" data-url="bihar.html">
+          <span class="label">Bihar</span>
+        </button>
+        <button class="state-btn" data-name="chhattisgarh" data-url="chhattisgarh.html">
+          <span class="label">Chhattisgarh</span>
+        </button>
+        <button class="state-btn" data-name="goa" data-url="goa.html">
+          <span class="label">Goa</span>
+        </button>
+        <button class="state-btn" data-name="gujarat" data-url="gujarat.html">
+          <span class="label">Gujarat</span>
+        </button>
+        <button class="state-btn" data-name="haryana" data-url="haryana.html">
+          <span class="label">Haryana</span>
+        </button>
+        <button class="state-btn" data-name="himachal pradesh" data-url="himachal-pradesh.html">
+          <span class="label">Himachal Pradesh</span>
+        </button>
+        <button class="state-btn" data-name="jharkhand" data-url="jharkhand.html">
+          <span class="label">Jharkhand</span>
+        </button>
+        <button class="state-btn" data-name="karnataka" data-url="karnataka.html">
+          <span class="label">Karnataka</span>
+        </button>
+        <button class="state-btn" data-name="kerala" data-url="kerala.html">
+          <span class="label">Kerala</span>
+        </button>
+        <button class="state-btn" data-name="madhya pradesh" data-url="madhya-pradesh.html">
+          <span class="label">Madhya Pradesh</span>
+        </button>
+        <button class="state-btn" data-name="maharashtra" data-url="maharashtra.html">
+          <span class="label">Maharashtra</span>
+        </button>
+        <button class="state-btn" data-name="manipur" data-url="manipur.html">
+          <span class="label">Manipur</span>
+        </button>
+        <button class="state-btn" data-name="meghalaya" data-url="meghalaya.html">
+          <span class="label">Meghalaya</span>
+        </button>
+        <button class="state-btn" data-name="mizoram" data-url="mizoram.html">
+          <span class="label">Mizoram</span>
+        </button>
+        <button class="state-btn" data-name="nagaland" data-url="nagaland.html">
+          <span class="label">Nagaland</span>
+        </button>
+        <button class="state-btn" data-name="odisha" data-url="odisha.html">
+          <span class="label">Odisha</span>
+        </button>
+        <button class="state-btn" data-name="punjab" data-url="punjab.html">
+          <span class="label">Punjab</span>
+        </button>
+        <button class="state-btn" data-name="rajasthan" data-url="rajasthan.html">
+          <span class="label">Rajasthan</span>
+        </button>
+        <button class="state-btn" data-name="sikkim" data-url="sikkim.html">
+          <span class="label">Sikkim</span>
+        </button>
+        <button class="state-btn" data-name="tamil nadu" data-url="tamil-nadu.html">
+          <span class="label">Tamil Nadu</span>
+        </button>
+        <button class="state-btn" data-name="telangana" data-url="telangana.html">
+          <span class="label">Telangana</span>
+        </button>
+        <button class="state-btn" data-name="tripura" data-url="tripura.html">
+          <span class="label">Tripura</span>
+        </button>
+        <button class="state-btn" data-name="uttar pradesh" data-url="uttar-pradesh.html">
+          <span class="label">Uttar Pradesh</span>
+        </button>
+        <button class="state-btn" data-name="uttarakhand" data-url="uttarakhand.html">
+          <span class="label">Uttarakhand</span>
+        </button>
+        <button class="state-btn" data-name="west bengal" data-url="west-bengal.html">
+          <span class="label">West Bengal</span>
+        </button>
+
+        <!-- UNION TERRITORIES (8) -->
+        <button class="state-btn ut" data-name="andaman and nicobar islands" data-url="andaman-nicobar.html">
+          <span class="label">Andaman &amp; Nicobar Islands</span><span class="tag">UT</span>
+        </button>
+        <button class="state-btn ut" data-name="chandigarh" data-url="chandigarh.html">
+          <span class="label">Chandigarh</span><span class="tag">UT</span>
+        </button>
+        <button class="state-btn ut" data-name="dadra and nagar haveli and daman and diu" data-url="dadra-nagar-haveli-daman-diu.html">
+          <span class="label">Dadra &amp; Nagar Haveli &amp; Daman &amp; Diu</span><span class="tag">UT</span>
+        </button>
+        <button class="state-btn ut" data-name="delhi" data-url="delhi.html">
+          <span class="label">Delhi (NCT)</span><span class="tag">UT</span>
+        </button>
+        <button class="state-btn ut" data-name="jammu and kashmir" data-url="jammu-kashmir.html">
+          <span class="label">Jammu &amp; Kashmir</span><span class="tag">UT</span>
+        </button>
+        <button class="state-btn ut" data-name="ladakh" data-url="ladakh.html">
+          <span class="label">Ladakh</span><span class="tag">UT</span>
+        </button>
+        <button class="state-btn ut" data-name="lakshadweep" data-url="lakshadweep.html">
+          <span class="label">Lakshadweep</span><span class="tag">UT</span>
+        </button>
+        <button class="state-btn ut" data-name="puducherry" data-url="puducherry.html">
+          <span class="label">Puducherry</span><span class="tag">UT</span>
+        </button>
+         <button class="state-btn ut" data-name="india" data-url="india_map.html">
+          <span class="label">INDIA</span><span class="tag">UT</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="footer-note">
+      💡 Tip: Upar har button ka <span class="chip-small">data-url="..."</span> aap apne
+      <strong>India Map Match</strong> wale game pages ki file name / full URL se replace kar sakte ho.
+    </div>
+  </div>
+
+<script>
+  (function() {
+    const norm = s => s.toLowerCase().replace(/\s+/g,' ').trim();
+    const grid = document.getElementById('stateGrid');
+    const searchInput = document.getElementById('searchInput');
+    const buttons = Array.from(grid.querySelectorAll('.state-btn'));
+
+    // Button click → redirect to given URL
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const url = btn.dataset.url;
+        if (url && url !== '#') {
+          window.location.href = url;   // yahan aapka state game page open hoga
+        } else {
+          alert('Is state ka game page abhi URL se link nahi kiya gaya.');
+        }
+      });
+
+      // Mouse move par glow center
+      btn.addEventListener('mousemove', (e) => {
+        const rect = btn.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+        btn.style.setProperty('--x', x + '%');
+        btn.style.setProperty('--y', y + '%');
+      });
+    });
+
+    // Live search filter
+    searchInput.addEventListener('input', () => {
+      const q = norm(searchInput.value);
+      buttons.forEach(btn => {
+        const name = norm(btn.dataset.name || btn.textContent);
+        const match = !q || name.includes(q);
+        btn.style.opacity = match ? '1' : '0.18';
+        btn.style.pointerEvents = match ? 'auto' : 'none';
+      });
+    });
+  })();
+</script>
+</body>
+</html>
